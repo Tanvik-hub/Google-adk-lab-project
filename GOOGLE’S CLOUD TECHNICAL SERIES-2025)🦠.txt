@@ -1,0 +1,125 @@
+﻿GOOGLE’S CLOUD TECHNICAL SERIES-2025)🦠
+🎯Get started with Agent Development Kit (ADK)
+
+
+
+
+
+
+1. Multi-Agent Systems: Build modular and scalable applications by composing multiple specialized agents in a hierarchy. Enable complex coordination and delegation.
+2. Rich Tool Ecosystem: Equip agents with diverse capabilities: use pre-built tools (Search, Code Execution, etc.), create custom functions, integrate tools from third-party agent frameworks (LangChain, CrewAI), or even use other agents as tools.
+3. Flexible Orchestration: Define workflows using workflow agents (SequentialAgent, ParallelAgent, and LoopAgent) for predictable pipelines, or leverage LLM-driven dynamic routing (LlmAgent transfer) for adaptive behavior.
+4. Integrated Developer Experience: Develop, test, and debug locally with a powerful CLI and an interactive dev UI. Inspect events, state, and agent execution step-by-step.
+5. Built-in Evaluation: Systematically assess agent performance by evaluating both the final response quality and the step-by-step execution trajectory against predefined test cases.
+6. Deployment Ready: Containerize and deploy your agents anywhere – run locally, scale with Vertex AI Agent Engine, or integrate into custom infrastructure using Cloud Run or Docker.
+
+
+Task 1. Install ADK and set up your environment
+->Prepare a Cloud Shell Editor tab
+Open Cloud Shell Editor: Click "Open in new window" in the Cloud Shell terminal, then run cloudshell workspace ~ to set the editor's working directory to the home folder.
+
+
+->Install ADK:
+* export PATH=$PATH:"/home/${USER}/.local/bin": This updates your PATH so the terminal can find the adk command after it's installed.
+* python3 -m pip install google-adk: This installs the Agent Development Kit.
+Download & Unzip Lab Files:
+* gcloud storage cp gs://YOUR_GCP_PROJECT_ID-bucket/adk_project.zip ./adk_project.zip: This copies the lab's project files from a Google Cloud Storage bucket. Note: You will need to replace YOUR_GCP_PROJECT_ID with the actual Project ID provided in the Qwiklabs "Lab Details" pane.
+* unzip adk_project.zip: This unzips the files into a new adk_project directory.
+Install Project Dependencies:
+* python3 -m pip install -r adk_project/requirements.txt: This reads the requirements.txt file from the new project folder and installs all the specific Python libraries needed for the lab.
+
+
+
+
+
+
+
+
+Core Concepts of Agent Development Kit
+-Agent: This is the "worker" or the "brain." It's the AI entity that's assigned a specific job.
+
+
+-Tools: This is the agent's "toolbox" (e.g., a hammer for Search, a screwdriver for Code Execution). It's how the agent does things in the real world.
+
+
+Session Services: This is the agent's "memory."
+* Session (Events): The long-term memory or "transcript" of everything that has happened in the conversation.
+* State: The short-term memory or "scratchpad" the agent uses to keep track of what it's doing right now.
+-Callbacks: These are "hooks" or "checkpoints." They let a developer jump into the middle of the agent's thinking process to add custom logic, log data, or stop the agent if needed.
+
+
+-Artifact Management: This is the agent's "file system." It's how it can handle non-text data, like opening a PDF or saving a generated image.
+
+
+-Runner: This is the "manager" or the "engine." It's the master process that pulls everything together, tells the agent when to run, gives it the tools and memory, and manages the overall workflow.
+
+
+
+
+Task 2: Reviewing the Project Structure
+This task is all about understanding the standard ADK project layout and activating your agent's first tool.
+* Project Structure: You'll see that the main adk_project folder contains separate sub-folders for each agent (my_google_search_agent, etc.). This is the standard ADK organization.
+* Agent Package: Inside my_google_search_agent, you'll find:
+   * __init__.py: This file's content (from . import agent) is what officially tells ADK, "This directory is an agent package."
+   * agent.py: This is the actual code that defines your agent's brain and configuration.
+* Your Main Action: You will edit agent.py and add the following line inside the Agent(...) definition:
+Python
+
+tools=[google_search]
+   * 
+   * Key Takeaway: By adding this single line, you are transforming the agent from a simple chatbot into a true RAG (Retrieval-Augmented Generation) system. It can now "retrieve" live data from the web to "augment" its response, rather than just relying on its training data.
+________________
+
+
+Task 3: Running the Agent in the Dev UI
+Here, you'll configure the environment and run the agent for the first time using the ADK's visual Dev UI.
+   1. Configure Environment (.env file): You'll edit the hidden .env file inside the my_google_search_agent directory. This tells ADK three crucial things:
+   * GOOGLE_GENAI_USE_VERTEXAI=TRUE: "Use my lab's Vertex AI credentials for authentication."
+   * GOOGLE_CLOUD_PROJECT=...: "This is the specific project to bill for the API calls." (You'll paste your GCP Project ID here).
+   * MODEL=gemini-1.5-flash: "Use this specific model as the agent's 'brain'."
+   2. Run the Dev UI: You'll go to the terminal, navigate to the ~/adk_project directory, and run the command:
+Bash
+
+adk web
+      3. 
+      4. Test the Agent:
+      * You'll click the http://127.0.0.1:8000 link to open the UI in a new tab.
+      * You'll select my_google_search_agent.
+      * You'll ask it: "What is some recent global news?"
+      5. Inspect the Results: This is the most important part. You'll see the agent give you current news (proving it used the search tool). You'll also explore:
+      * The Trace tab: To see a timeline of the agent's actions (e.g., "thinking" -> "calling search tool" -> "getting results" -> "generating final answer").
+      * The Events tab: To inspect the raw data, including the groundingMetadata, which shows the exact search results the agent used.
+      6. Stop the Server: When you're done, you'll go back to the Cloud Shell terminal and press CTRL + C to shut down the web server.
+Task 4. Run an agent programmatically
+
+
+Part 1: Running the Agent in a Real Script
+In Task 3, you just ran adk web, and the Dev UI magically handled all the "plumbing" for you. It created a session (a chat memory), managed the agent's "engine," and displayed the chat.
+When you run python3 app_agent/agent.py, you are now responsible for all of that plumbing yourself. The app_agent/agent.py script shows you the minimum "plumbing" you need to add.
+These are the new components you must provide:
+      1. InMemoryRunner(): This is the engine manager. In the Dev UI, the "web" server was the runner. Here, in your script, you have to create one. Its job is to boot up the agent, hand it the user's message, and manage the back-and-forth execution.
+      2. runner.session_service.create_session(): This creates the agent's short-term memory. The Dev UI automatically created a new "chat session" every time you started a conversation. Here, you have to manually create a session object. Without this, the agent would be stateless and couldn't remember anything, not even the last thing you said.
+      3. types.Content() and types.Part(): This is the formal "envelope" for your message. Instead of just sending a simple text string, you are packaging it into a standard Content object. This is what allows ADK to handle complex, multimodal messages (e.g., text and images) in the future.
+When you run python3 app_agent/agent.py the first time, it runs all this setup code and you get a simple, conversational string back: trivia_agent: The capital of France is Paris.
+This is fine for a chatbot, but it's terrible for another computer program.
+________________
+
+
+Part 2: Forcing a Structured JSON Output
+This is the most important part of the task. How would another application use the sentence "The capital of France is Paris"? It would have to guess or try to parse the string, which is very unreliable.
+What your application really wants is structured data, like JSON.
+This is where pydantic comes in.
+      1. You Define a "Rule": By importing BaseModel and Field and writing this class...
+Python
+
+class CountryCapital(BaseModel):
+    capital: str = Field(description="A country's capital.")
+         2. .you are creating a strict "output template." You're telling the agent, "I don't want a random sentence. Your only allowed answer format is one that fits this Python class."
+         3. You Assign the "Rule": You add this parameter to your agent:
+Python
+
+output_schema=CountryCapital,
+            4. 
+This is the magic line. You are forcing the agent's LLM to generate a response that perfectly matches your CountryCapital schema.
+            5. The New Result: When you run the script again, the output is completely different: ** trivia_agent: {"capital": "Paris"}
+This is JSON. Now, any other program can use this agent and reliably get the answer by just accessing result['capital']. You've made your agent's output predictable and machine-readable.
