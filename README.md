@@ -4,7 +4,7 @@ Code and lab files for Google's "Get started with Agent Development Kit (ADK)" Q
 # Get started with Agent Development Kit (ADK) - Lab Project
 
 This repository contains my completed project from the Google Cloud lab **GENAI104: Get started with Agent Development Kit**. This lab was my first hands-on experience bridging the gap between the *theory* of AI agents and the *practical* steps of building, testing, and running them.
-
+                                                                                                                          
 ## 📖 What I Learned (The "Class" Concepts)
 
 Before the hands-on, I learned the core components of the Agent Development Kit (ADK) and what makes it a powerful framework:
