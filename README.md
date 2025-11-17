@@ -1,4 +1,5 @@
-# Google-adk-lab-project
+# 🤖Google-adk-lab-project -DAY1
+
 Code and lab files for Google's "Get started with Agent Development Kit (ADK)" Qwiklab (GENAI104).
 
 # Get started with Agent Development Kit (ADK) - Lab Project
